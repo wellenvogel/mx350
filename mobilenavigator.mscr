@@ -1,0 +1,57 @@
+# Start Dialog for Navgear MX 350
+# vim: ts=2 et sw=2
+# to install:
+# 1. take an empty SD card, create a folder named MobileNavigator
+# 2. download mortscript 4.2 from http://www.sto-helit.de/index.php?module=download&action=list&category=2
+# 3. unpack the zip archive an copy the content of the folder bin\PNA to the SD card into the MobileNavigator directory
+# 4. rename Autorun.exe into mobilenavigator.exe
+# 5. copy this script with the name mobilenavigator.mscr to the same directory
+# if you would like to add more programs to start, just edit below
+
+EXPLORER="\Windows\explorer.exe"
+GPS="\windows\GPS.exe"
+#name of the bluetooth window
+BTWIN="WND_NAME_BLUETOOTH_SERVICE"
+
+#the number of entries in the arrays titles and commands must be equal
+default=3
+timeout=8
+titles[1]="Explorer"
+commands[1]=EXPLORER
+titles[2]="Commander"
+commands[2]="\SDMMC\Totalcommander\cecmd.exe"
+titles[3]="OZI"
+commands[3]="\SDMMC\Oziexplorer\OziExplorerCE.exe"
+titles[4]="switchUSB"
+commands[4]="\Windows\ctlpnl.exe"
+params[4]="cplswitch.cpl,1"
+
+#now start the selection dialog
+
+SetChoiceEntryFormat(30,18)
+SetMessageFont(18)
+select=Choice("Start","MX350-AV1.01",default,timeout,titles)
+If (select > 0) 
+  #kill the bt window
+  gpsKilled=0
+  If (WndExists(BTWIN))
+    Close(BTWIN)
+  EndIf
+  #start explorer before OZI
+  #this gives us the taskbar functions
+  If (select = 3) 
+    If (ProcExists(GPS))
+      Kill(GPS)
+      gpsKilled=1
+    EndIf
+    If (ProcExists(EXPLORER))
+      Kill(EXPLORER)
+    EndIf
+    Run(EXPLORER)
+  EndIf
+  RunWait(commands[select],params[select])
+  If (gpsKilled > 0)
+    Run(GPS)
+  EndIf
+EndIf
+Exit
